@@ -144,9 +144,9 @@ const DEFAULT_USERNAME = 'Music';
 
 function renderTextContent(ctx, canvas, textColor, theme) {
 	const username = document.getElementById('username').value.trim() || DEFAULT_USERNAME;
-	const title = document.getElementById('title').value.trim() || 'Main Title';
-	const subtitle = document.getElementById('subtitle').value.trim() || 'Subtitle';
-	const footer = document.getElementById('footer').value.trim() || 'Footer';
+	const title = document.getElementById('title').value.trim();
+	const subtitle = document.getElementById('subtitle').value.trim();
+	const footer = document.getElementById('footer').value.trim();
 
 	renderWarnings(username, title, subtitle, footer);
 
