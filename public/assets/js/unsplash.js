@@ -2,7 +2,6 @@ async function searchUnsplashImages(query) {
 	if (!query) return;
   
 	try {
-		// const response = await fetch(`https://api.unsplash.com/search/photos?query=${encodeURIComponent(query)}&per_page=12&client_id=${accessKey}`);
 		const response = await fetch(`/api/unsplash?query=${encodeURIComponent(query)}`);
 		const data = await response.json();
 	
@@ -53,8 +52,6 @@ function selectUnsplashImage(path, fullPath, title = 'Untitled', author = 'Unkno
 		render();
 		hideCanvasLoading();
 		if (canvas) canvas.style.filter = '';
-
-		// uploadedImage.src = fullPath;
 
 		updateImageMetadata({
             src: fullPath || path,

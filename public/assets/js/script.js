@@ -302,10 +302,6 @@ let canvasLoadingOverlay;
 const DASHED_COLOR = '#3a3a3a'
 
 document.addEventListener('DOMContentLoaded', async () => {
-	if (window.location.pathname !== '/') {
-		window.history.replaceState({}, '', '/index.html');
-	}
-
 	imagePicker = document.getElementById('image-selector');
 	colorSelector = document.getElementById('color-selector');
 	filePicker = document.getElementById('file-selector');
@@ -324,9 +320,16 @@ document.addEventListener('DOMContentLoaded', async () => {
 	const searchQuery = params.get('search');
 	if (searchQuery) {
 		const unsplashSearch = document.getElementById('unsplash-search');
+		const resultContainer = document.getElementById('unsplash-selector');
+
 		if (unsplashSearch) {
 			unsplashSearch.value = searchQuery;
 			searchUnsplashImages(searchQuery);
+			searchUnsplashImages(searchQuery).then(() => {
+				unsplashSearch.value = '';
+				resultContainer.innerHTML = '';
+				window.history.replaceState({}, '', window.location.pathname);
+			});
 		}
 	}
 	
@@ -344,30 +347,31 @@ document.addEventListener('DOMContentLoaded', async () => {
 			debounceTimeout = setTimeout(() => {
 				const query = unsplashSearch.value.trim();
 				if (query) {
-					const newUrl = new URL(window.location.href);
-					newUrl.searchParams.set('search', query);
-					window.history.pushState({}, '', newUrl);
-					
-					searchUnsplashImages(query);
+				const newUrl = new URL(window.location.href);
+				newUrl.searchParams.set('search', query);
+				window.history.pushState({}, '', newUrl);
+
+				searchUnsplashImages(query);
+				} else {
+				const resultContainer = document.getElementById('unsplash-selector');
+				if (resultContainer) {
+					resultContainer.innerHTML = '';
+				}
+				const newUrl = new URL(window.location.href);
+				newUrl.searchParams.delete('search');
+				window.history.pushState({}, '', newUrl);
 				}
 			}, 300);
 		});
 	}
-	// 검색어 입력 후 엔터 눌렀을 때 검색
-	// if (unsplashSearch) {
-	// 	unsplashSearch.addEventListener('keyup', (e) => {
-	// 		if (e.key === 'Enter') {
-	// 			searchUnsplashImages(e.target.value.trim());
-	// 		}
-	// 	});
-	// }
 
-    ['username', 'title', 'subtitle', 'footer', 'themeSelect', 'useShadow', 'useBlur'].forEach(id => {
+	['username', 'title', 'subtitle', 'footer', 'themeSelect', 'useShadow', 'useBlur'].forEach(id => {
 		const input = document.getElementById(id);
 		if (input) {
 			input.addEventListener('input', render);
 		}
     });
+
 	const buttons = document.querySelectorAll('.theme-button');
     buttons.forEach(btn => {
 		btn.style.border = `3px dashed ${DASHED_COLOR}`;
