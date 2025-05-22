@@ -1,0 +1,603 @@
+// function $(id) {
+// 	return document.getElementById(id);
+// }
+
+function getRGBtoHex(rgb) {
+	if (typeof rgb !== 'string') return '#000000';
+	const result = rgb.match(/\d+/g);
+	if (!result || result.length < 3) return '#000000';
+
+	const r = parseInt(result[0], 10).toString(16).padStart(2, '0');
+	const g = parseInt(result[1], 10).toString(16).padStart(2, '0');
+	const b = parseInt(result[2], 10).toString(16).padStart(2, '0');
+
+	return `#${r}${g}${b}`;
+}
+
+function getTextColorForBackground(hexColor) {
+	const r = parseInt(hexColor.substr(1, 2), 16);
+	const g = parseInt(hexColor.substr(3, 2), 16);
+	const b = parseInt(hexColor.substr(5, 2), 16);
+	const brightness = (r * 299 + g * 587 + b * 114) / 1000;
+
+	return brightness > 200 ? 'black' : 'white';
+}
+
+function getAverageColor(image) {
+	const canvas = document.createElement('canvas');
+
+	const width = 100;
+	const height = 100;
+	canvas.width = width;
+	canvas.height = height;
+
+	const ctx = canvas.getContext('2d');
+	ctx.drawImage(image, 0, 0, width, height);
+
+	const imageData = ctx.getImageData(0, 0, width, height).data;
+	let r = 0, g = 0, b = 0, count = 0;
+
+	for (let i = 0; i < imageData.length; i += 4) {
+		r += imageData[i];
+		g += imageData[i + 1];
+		b += imageData[i + 2];
+		count++;
+	}
+	r = Math.round(r / count);
+	g = Math.round(g / count);
+	b = Math.round(b / count);
+
+	const color = `rgb(${r}, ${g}, ${b})`;
+
+	return color;
+}
+
+function TextLetterSpacing(ctx, text, x, y, spacing, align = 'left') {
+	const totalWidth = text.split('').reduce((sum, char) => sum + ctx.measureText(char).width + spacing, -spacing);
+	if (align === 'center') {
+		x -= totalWidth / 2;
+	} else if (align === 'right') {
+		x -= totalWidth;
+	}
+	for (let i = 0; i < text.length; i++) {
+		ctx.fillText(text[i], x, y);
+		x += ctx.measureText(text[i]).width + spacing;
+	}
+}
+
+function TextLetterSpacingMultiline(ctx, text, x, y, spacing, lineHeight, align = 'left') {
+	const lines = text.split('\n');
+	lines.forEach((line, index) => {
+		TextLetterSpacing(ctx, line, x, y + index * lineHeight, spacing, align);
+	});
+}
+
+let selectedBackgroundColor = null;
+
+function drawCoverImage(ctx, image, canvas, destY = 0, destHeight = null) {
+	const destWidth = canvas.width;
+	if (destHeight === null) destHeight = canvas.height - destY;
+	const destAspect = destWidth / destHeight;
+	const sourceAspect = image.width / image.height;
+	let sx, sy, sWidth, sHeight;
+
+	if (sourceAspect > destAspect) {
+		sHeight = image.height;
+		sWidth = image.height * destAspect;
+		sx = (image.width - sWidth) / 2;
+		sy = 0;
+	} else {
+		sWidth = image.width;
+		sHeight = image.width / destAspect;
+		sx = 0;
+		sy = (image.height - sHeight) / 2;
+	}
+	ctx.drawImage(
+		image,
+		sx, sy, sWidth, sHeight,
+		0, destY, destWidth, destHeight
+	);
+}
+
+function renderBackground(ctx, canvas) {
+	ctx.clearRect(0, 0, canvas.width, canvas.height);
+	ctx.fillStyle = selectedBackgroundColor || '#000';
+	ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+	const shadow = document.getElementById('useShadow').checked;
+	const blur = document.getElementById('useBlur').checked;
+
+	ctx.shadowColor = 'transparent';
+	ctx.shadowBlur = 0;
+
+	if (shadow) {
+		ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
+		ctx.shadowBlur = 20;
+	}
+
+	const blurValue = 6;
+	if (uploadedImage) {
+		if (blur) {
+			ctx.filter = `blur(${blurValue}px)`;
+			drawCoverImage(ctx, uploadedImage, canvas);
+			ctx.filter = 'none';
+		} else {
+			drawCoverImage(ctx, uploadedImage, canvas);
+		}
+	}
+}
+
+function renderWarnings(username, title, subtitle, footer) {
+	const WARNING_LENGTH = 10;
+	const usernameWarning = document.getElementById('usernameWarning');
+	const titleWarning = document.getElementById('titleWarning');
+	const subtitleWarning = document.getElementById('subtitleWarning');
+	const footerWarning = document.getElementById('footerWarning');
+
+	usernameWarning.innerText = username.length > WARNING_LENGTH ? '⚠️ Warning, detected long text.' : '';
+	titleWarning.innerText = title.length > WARNING_LENGTH ? '⚠️ Warning, detected long text.' : '';
+	subtitleWarning.innerText = subtitle.length > WARNING_LENGTH ? '⚠️ Warning, detected long text.' : '';
+	footerWarning.innerText = footer.length > WARNING_LENGTH ? '⚠️ Warning, detected long text.' : '';
+}
+
+const DEFAULT_USERNAME = 'Music';
+
+function renderTextContent(ctx, canvas, textColor, theme) {
+	const username = document.getElementById('username').value.trim() || DEFAULT_USERNAME;
+	const title = document.getElementById('title').value.trim() || 'Main Title';
+	const subtitle = document.getElementById('subtitle').value.trim() || 'Subtitle';
+	const footer = document.getElementById('footer').value.trim() || 'Footer';
+
+	renderWarnings(username, title, subtitle, footer);
+
+	ctx.textAlign = 'left';
+	ctx.globalAlpha = 1.0;
+	ctx.fillStyle = textColor;
+
+	if (theme == 'Modern') {
+		ctx.font = '600 40px Pretendard, sans-serif';
+		TextLetterSpacing(ctx, username, 64, 92, 1.5, 'left');
+		ctx.font = '700 90px Pretendard, sans-serif';
+		TextLetterSpacing(ctx, title, 60, 208, -3);
+		ctx.font = '400 90px Pretendard, sans-serif';
+		TextLetterSpacing(ctx, subtitle, 60, 290, -4);
+		ctx.globalAlpha = 0.5;
+		ctx.font = '400 30px Pretendard, sans-serif';
+		TextLetterSpacing(ctx, footer, 60, canvas.height - 70, 1);
+		ctx.globalAlpha = 1.0;
+	} else if (theme == 'Normal') {
+		ctx.font = '500 34px Pretendard, sans-serif';
+		TextLetterSpacing(ctx, username, canvas.width - 30, 50, 2, 'right');
+		ctx.font = '600 120px Pretendard, sans-serif';
+		TextLetterSpacing(ctx, title, canvas.width / 2, 310, -4, 'center');
+		ctx.font = '500 34px Pretendard, sans-serif';
+		TextLetterSpacing(ctx, subtitle, canvas.width / 2, 370, 0, 'center');
+		ctx.globalAlpha = 0.5;
+		ctx.font = '400 34px Pretendard, sans-serif';
+		TextLetterSpacing(ctx, footer, canvas.width / 2, canvas.height - 100, -1, 'center');
+		ctx.globalAlpha = 1.0;
+	} else if (theme === 'Essentials') {
+		const titleText = 'Essentials';
+		const topHeight = 200;
+		
+		let topFillColor = '#d8c8c5';
+		topFillColor = getAverageColor(uploadedImage);
+		ctx.globalCompositeOperation = 'source-over';
+		ctx.fillStyle = topFillColor;
+		ctx.fillRect(0, 0, canvas.width, topHeight);
+		
+		if (uploadedImage) {
+			drawCoverImage(ctx, uploadedImage, canvas, topHeight, canvas.height - topHeight);
+		}
+
+		const topFillHex = getRGBtoHex(topFillColor);
+		const titleTextColor = getTextColorForBackground(topFillHex);
+		ctx.fillStyle = titleTextColor;
+		
+		ctx.textAlign = 'left';
+		ctx.font = '500 34px Pretendard, sans-serif';
+		TextLetterSpacing(ctx, username, canvas.width - 30, 50, 2, 'right');
+		ctx.font = '600 80px Pretendard, sans-serif';
+		TextLetterSpacing(ctx, titleText, 30, 160, 0, 'left');
+	} else if (theme == 'Classic') {
+		const classic_username = (username === DEFAULT_USERNAME || username === '') ? `${DEFAULT_USERNAME}\nClassical` : `${username}\nClassical`;
+		ctx.font = '500 34px Pretendard, sans-serif';
+		TextLetterSpacingMultiline(ctx, classic_username, canvas.width - 30, 50, 2, 40, 'right');
+		ctx.font = '600 80px Pretendard, sans-serif';
+		TextLetterSpacing(ctx, title, canvas.width / 2, ((canvas.height / 2) + 20), 0, 'center');
+	}
+}
+
+function showCanvasLoading() {
+	canvasLoadingOverlay?.classList.remove('hidden');
+}
+
+function hideCanvasLoading() {
+	canvasLoadingOverlay?.classList.add('hidden');
+}
+
+function render() {
+	const canvas = document.getElementById('cover');
+	const ctx = canvas.getContext('2d');
+
+	const textColor = uploadedImage ? selectedTextColor || 'white' : getTextColorForBackground(selectedBackgroundColor || '#000');
+	let theme = document.getElementById('themeSelect').value;
+
+	renderBackground(ctx, canvas);
+	renderTextContent(ctx, canvas, textColor, theme);
+
+	hideCanvasLoading();
+}
+
+function download() {
+	const canvas = document.getElementById('cover');
+	const format = document.getElementById('format').value;
+	const link = document.createElement('a');
+	
+	link.download = `playlist-cover.${format}`;
+
+	console.log('format: ', format);
+	if (format === 'jpg') {
+		const tempCanvas = document.createElement('canvas');
+		tempCanvas.width = canvas.width;
+		tempCanvas.height = canvas.height;
+		const tempCtx = tempCanvas.getContext('2d');
+
+		tempCtx.fillStyle = '#fff';
+		tempCtx.fillRect(0, 0, canvas.width, canvas.height);
+		tempCtx.drawImage(canvas, 0, 0);
+
+		link.href = tempCanvas.toDataURL('image/jpeg');
+	} else {
+		link.href = canvas.toDataURL('image/png');
+	}
+	link.click();
+}
+
+let uploadedImage = null;
+
+function updateImageMetadata({ src, title, source = 'Unknown', author = 'Unknown' }) {
+	if (container) {
+		container.style.backgroundImage = `url('${src}')`;
+		container.style.backgroundSize = 'cover';
+		container.style.backgroundPosition = 'center';
+		container.style.backgroundColor = '';
+	}
+	if (imageTitle) imageTitle.innerText = title;
+	if (imageSource) imageSource.innerText = source;
+	if (imageAuthor) imageAuthor.innerText = author;
+}
+
+document.getElementById('imageUpload').addEventListener('change', function (e) {
+	const file = e.target.files[0];
+	if (file) {
+		showCanvasLoading();
+		const reader = new FileReader();
+		reader.onload = function (event) {
+			uploadedImage = new Image();
+			uploadedImage.onload = () => {
+				const avgRgb = getAverageColor(uploadedImage);
+				const avgHex = getRGBtoHex(avgRgb);
+				const textColor = getTextColorForBackground(avgHex);
+
+				selectedTextColor = textColor;
+				selectedBackgroundColor = null;
+
+				render();
+				updateImageMetadata({
+					src: uploadedImage.src,
+					title: file.name,
+					source: '(User Uploaded)',
+					author: 'Unknown'
+				});
+			};
+			uploadedImage.src = event.target.result;
+		};
+		reader.readAsDataURL(file);
+	}
+});
+
+let imagePicker, container, imageTitle, imageSource, imageAuthor;
+let canvasLoadingOverlay;
+const DASHED_COLOR = '#3a3a3a'
+
+document.addEventListener('DOMContentLoaded', async () => {
+	if (window.location.pathname !== '/') {
+		window.history.replaceState({}, '', '/index.html');
+	}
+
+	imagePicker = document.getElementById('image-selector');
+	colorSelector = document.getElementById('color-selector');
+	filePicker = document.getElementById('file-selector');
+	colorPicker = document.getElementById('color-picker');
+	
+	container = document.getElementById('mini-image-thumnail');
+	imageTitle = document.getElementById('imageTitle');
+	imageSource = document.getElementById('imageSource');
+	imageAuthor = document.getElementById('imageAuthor');
+	
+	canvasLoadingOverlay = document.getElementById('canvasLoadingOverlay');
+	
+	if (canvasLoadingOverlay) hideCanvasLoading();
+
+	const params = new URLSearchParams(window.location.search);
+	const searchQuery = params.get('search');
+	if (searchQuery) {
+		const unsplashSearch = document.getElementById('unsplash-search');
+		if (unsplashSearch) {
+			unsplashSearch.value = searchQuery;
+			searchUnsplashImages(searchQuery);
+		}
+	}
+	
+	const unsplashBtn = document.getElementById('unsplash-img-btn');
+	const unsplashSearch = document.getElementById('unsplash-search');
+
+	if (unsplashBtn) {
+		unsplashBtn.addEventListener('click', showUnsplashPicker);
+	}
+
+	if (unsplashSearch) {
+		let debounceTimeout;
+		unsplashSearch.addEventListener('input', () => {
+			clearTimeout(debounceTimeout);
+			debounceTimeout = setTimeout(() => {
+				const query = unsplashSearch.value.trim();
+				if (query) {
+					const newUrl = new URL(window.location.href);
+					newUrl.searchParams.set('search', query);
+					window.history.pushState({}, '', newUrl);
+					
+					searchUnsplashImages(query);
+				}
+			}, 300);
+		});
+	}
+	// 검색어 입력 후 엔터 눌렀을 때 검색
+	// if (unsplashSearch) {
+	// 	unsplashSearch.addEventListener('keyup', (e) => {
+	// 		if (e.key === 'Enter') {
+	// 			searchUnsplashImages(e.target.value.trim());
+	// 		}
+	// 	});
+	// }
+
+    ['username', 'title', 'subtitle', 'footer', 'themeSelect', 'useShadow', 'useBlur'].forEach(id => {
+		const input = document.getElementById(id);
+		if (input) {
+			input.addEventListener('input', render);
+		}
+    });
+	const buttons = document.querySelectorAll('.theme-button');
+    buttons.forEach(btn => {
+		btn.style.border = `3px dashed ${DASHED_COLOR}`;
+		btn.addEventListener('click', () => {
+			buttons.forEach(b => b.style.border = `3px dashed ${DASHED_COLOR}`);
+			btn.style.border = '3px dashed #4285F4';
+		});
+    });
+});
+
+let colorNameMap = {};
+let defaultImagePaths = [];
+
+async function loadData() {
+	try {
+		const colorsResponse = await fetch('/assets/json/default-colors.json');
+		colorNameMap = await colorsResponse.json();
+
+		const imagesResponse = await fetch('/assets/json/default-images.json');
+		defaultImagePaths = await imagesResponse.json();
+
+		loadDefaultColors();
+		loadDefaultImages();
+	} catch (error) {
+		console.error('❌ loadData error:', error);
+	}
+}
+  
+function toggleDefaultImages() {
+	if (imagePicker.classList.contains('hidden')) {
+		if (imagePicker.children.length === 0) {
+			defaultImagePaths.forEach((path) => {
+				const col = document.createElement('div');
+				col.className = 'col';
+		
+				const img = document.createElement('img');
+				img.src = path;
+				img.className = 'img-thumbnail rounded';
+				img.style.cursor = 'pointer';
+				img.style.aspectRatio = '1 / 1';
+				img.style.objectFit = 'cover';
+				img.onclick = () => selectDefaultImage(path);
+		
+				col.appendChild(img);
+				imagePicker.appendChild(col);
+			});
+		}
+		imagePicker.classList.remove('hidden');
+	}
+	else {
+		imagePicker.classList.add('hidden');
+	}
+}
+
+function loadDefaultImages() {
+	imagePicker.innerHTML = '';
+	imagePicker.classList.add('grid', 'grid-cols-7', 'gap-4');
+
+	defaultImagePaths.forEach(({ preview, original }) => {
+		const imgWrapper = document.createElement('div');
+		imgWrapper.className = 'img-wrapper rounded-2xl w-full p-3';
+		imgWrapper.style.border = `3px dashed ${DASHED_COLOR}`;
+
+		const img = document.createElement('img');
+		img.src = preview;
+		img.loading = 'lazy';
+		img.className = 'rounded-xl w-full aspect-square object-cover hover:scale-105 transition-transform cursor-pointer';
+		img.onclick = () => selectDefaultImage(original);
+
+		imgWrapper.appendChild(img);
+		imagePicker.appendChild(imgWrapper);
+	});
+
+	requestAnimationFrame(() => {
+		const imagePickerWidth = window.getComputedStyle(imagePicker).width;
+		filePicker.style.width = imagePickerWidth;
+		filePicker.style.border = `3px dashed ${DASHED_COLOR}`;
+		colorPicker.style.width = imagePickerWidth;
+	});
+}
+
+function loadDefaultColors() {
+	const defaultColorOptions = Object.keys(colorNameMap);
+	if (!colorSelector) return;
+
+	colorSelector.innerHTML = '';
+	colorSelector.classList.add('grid', 'grid-cols-7', 'gap-4');
+
+	defaultColorOptions.forEach((color) => {
+		const colorWrapper = document.createElement('div');
+		colorWrapper.className = 'color-wrapper rounded-2xl w-full p-3';
+		colorWrapper.style.border = `3px dashed ${DASHED_COLOR}`;
+		
+		const colorBox = document.createElement('div');
+		colorBox.className = 'rounded-xl w-full aspect-square object-cover hover:scale-105 transition-transform cursor-pointer';
+		colorBox.style.backgroundColor = color;
+		colorBox.onclick = () => selectColorBackground(color);
+
+		colorWrapper.appendChild(colorBox);
+		colorSelector.appendChild(colorWrapper);
+	});
+}
+
+window.onload = () => {
+	loadData();
+
+	const defaultBtn = document.getElementById('default-img-btn');
+	if (defaultBtn) {
+		defaultBtn.click();
+	}
+
+	if (container && !uploadedImage && !selectedBackgroundColor) {
+		fallback.classList.remove('hidden');
+		container.style.backgroundImage = '';
+		container.style.backgroundColor = 'transparent';
+	}
+	if (container && !container.parentElement.classList.contains('thumbnail-wrapper')) {
+		const wrapper = document.createElement('div');
+		wrapper.className = 'thumbnail-wrapper rounded-2xl w-30 h-30 p-3';
+		wrapper.style.border = `3px dashed ${DASHED_COLOR}`;
+		container.parentElement.insertBefore(wrapper, container);
+		wrapper.appendChild(container);
+	}
+};
+
+function selectDefaultImage(path) {
+	const img = new Image();
+	const canvas = document.getElementById('cover');
+	showCanvasLoading();
+	if (canvas) canvas.style.filter = 'blur(12px)';
+	img.crossOrigin = 'Anonymous';
+
+	img.onload = function () {
+		uploadedImage = img;
+
+		const avgRgb = getAverageColor(uploadedImage);
+		const avgHex = getRGBtoHex(avgRgb);
+		const textColor = getTextColorForBackground(avgHex);
+
+		selectedTextColor = textColor;
+		selectedBackgroundColor = null;
+
+		render();
+		hideCanvasLoading();
+		if (canvas) canvas.style.filter = '';
+
+		updateImageMetadata({
+			src: uploadedImage.src || path,
+			title: 'Untitled',
+			source: '(Selected Images)',
+			author: 'Unknown'
+		});
+
+		const fileInput = document.getElementById('imageUpload');
+		if (fileInput) fileInput.value = '';
+	};
+	img.src = path;
+}
+
+function selectColorBackground(color) {
+	selectedBackgroundColor = color;
+	uploadedImage = null;
+	render();
+
+	if (container) {
+		container.style.backgroundImage = '';
+		container.style.backgroundColor = color;
+	}
+	if (imageTitle) {
+		const colorName = colorNameMap[color] || color;
+		imageTitle.innerText = colorName;
+	}
+	if (imageSource) imageSource.innerText = '(Selected Color)';
+	if (imageAuthor) imageAuthor.innerText = color;
+}
+
+function toggleVisibility(config) {
+	Object.entries(config).forEach(([id, show]) => {
+		const el = document.getElementById(id);
+		if (!el) return;
+		el.classList.toggle('hidden', !show);
+		el.classList.toggle('block', show);
+	});
+}
+
+function showImagePicker() {
+	toggleDefaultImages();
+	toggleVisibility({
+		'image-selector': true,
+		'color-selector': false,
+		'file-selector': false,
+		'color-picker': false,
+		'unsplash-searchBar': false,
+		'unsplash-selector': false
+	});
+}
+
+function showColorPicker() {
+	loadDefaultColors();
+	toggleVisibility({
+		'image-selector': false,
+		'color-selector': true,
+		'file-selector': false,
+		'color-picker': true,
+		'unsplash-searchBar': false,
+		'unsplash-selector': false
+	});
+}
+
+function showUnsplashPicker() {
+	toggleVisibility({
+		'image-selector': false,
+		'color-selector': false,
+		'file-selector': false,
+		'color-picker': false,
+		'unsplash-searchBar': true,
+		'unsplash-selector': true
+	});
+}
+
+function showFilePicker() {
+	toggleVisibility({
+		'image-selector': false,
+		'color-selector': false,
+		'file-selector': true,
+		'color-picker': false,
+		'unsplash-searchBar': false,
+		'unsplash-selector': false
+	});
+}
+
+
+
