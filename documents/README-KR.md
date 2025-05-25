@@ -58,5 +58,5 @@
 
 | 파일                                                                                    | 설명                                                        |
 | :-------------------------------------------------------------------------------------- | :----------------------------------------------------------------- |
-| [covify-1.0.0.zip](https://github.com/devhaaana/covify/archive/refs/tags/v1.0.0.zip)       | covify v1.0.0의 전체 소스 코드가 포함된 *ZIP* 파일    |
-| [covify-1.0.0.tar.gz](https://github.com/devhaaana/covify/archive/refs/tags/v1.0.0.tar.gz) | covify v1.0.0의 전체 소스 코드가 포함된 *TAR.GZ* 파일 |
+| [covify-1.1.0.zip](https://github.com/devhaaana/covify/archive/refs/tags/v1.1.0.zip)       | covify v1.1.0의 전체 소스 코드가 포함된 *ZIP* 파일    |
+| [covify-1.1.0.tar.gz](https://github.com/devhaaana/covify/archive/refs/tags/v1.1.0.tar.gz) | covify v1.1.0의 전체 소스 코드가 포함된 *TAR.GZ* 파일 |

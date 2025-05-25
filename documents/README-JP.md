@@ -60,5 +60,5 @@
 
 | ファイル  | 説明  |
 | :-------------------------------------------------------------------------------------- | :----------------------------------------------------------------- |
-| [covify-1.0.0.zip](https://github.com/devhaaana/covify/archive/refs/tags/v1.0.0.zip)       | covify v1.0.0 のソースコードを含む *ZIP* ファイル    |
-| [covify-1.0.0.tar.gz](https://github.com/devhaaana/covify/archive/refs/tags/v1.0.0.tar.gz) | covify v1.0.0 のソースコードを含む *TAR.GZ* ファイル |
+| [covify-1.1.0.zip](https://github.com/devhaaana/covify/archive/refs/tags/v1.1.0.zip)       | covify v1.1.0 のソースコードを含む *ZIP* ファイル    |
+| [covify-1.1.0.tar.gz](https://github.com/devhaaana/covify/archive/refs/tags/v1.1.0.tar.gz) | covify v1.1.0 のソースコードを含む *TAR.GZ* ファイル |
