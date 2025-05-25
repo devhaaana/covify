@@ -4,6 +4,11 @@
 
 function getRGBtoHex(rgb) {
 	if (typeof rgb !== 'string') return '#000000';
+
+	if (rgb.startsWith('#') && (rgb.length === 7 || rgb.length === 4)) {
+		return rgb;
+	}
+
 	const result = rgb.match(/\d+/g);
 	if (!result || result.length < 3) return '#000000';
 
@@ -203,7 +208,8 @@ function renderTextContent(ctx, canvas, textColor, theme) {
 		const topHeight = 200;
 		
 		let topFillColor = '#d8c8c5';
-		topFillColor = getAverageColor(uploadedImage);
+		topFillColor = uploadedImage ? getAverageColor(uploadedImage) : selectedBackgroundColor || '#d8c8c5';
+
 		ctx.globalCompositeOperation = 'source-over';
 		ctx.fillStyle = topFillColor;
 		ctx.fillRect(0, 0, canvas.width, topHeight);
@@ -211,11 +217,15 @@ function renderTextContent(ctx, canvas, textColor, theme) {
 		if (uploadedImage) {
 			drawCoverImage(ctx, uploadedImage, canvas, topHeight, canvas.height - topHeight);
 		}
+		else {
+			ctx.fillStyle = selectedBackgroundColor || '#000';
+			ctx.fillRect(0, topHeight, canvas.width, canvas.height - topHeight);
+		}
 
 		const topFillHex = getRGBtoHex(topFillColor);
 		const titleTextColor = getTextColorForBackground(topFillHex);
 		ctx.fillStyle = titleTextColor;
-		
+
 		ctx.textAlign = 'left';
 		ctx.font = '500 34px Pretendard, sans-serif';
 		TextLetterSpacing(ctx, username, canvas.width - 30, 50, 2, 'right');
