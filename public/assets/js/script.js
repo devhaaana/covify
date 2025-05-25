@@ -106,6 +106,9 @@ function renderBackground(ctx, canvas) {
 
 	const shadow = document.getElementById('useShadow').checked;
 	const blur = document.getElementById('useBlur').checked;
+	const grain = document.getElementById('useGrain').checked;
+	const grainStrength = parseInt(document.getElementById('grainStrength')?.value || '20', 10);
+
 
 	ctx.shadowColor = 'transparent';
 	ctx.shadowBlur = 0;
@@ -124,6 +127,25 @@ function renderBackground(ctx, canvas) {
 		} else {
 			drawCoverImage(ctx, uploadedImage, canvas);
 		}
+	}
+
+	if (grain) {
+		const grainCanvas = document.createElement('canvas');
+		grainCanvas.width = canvas.width;
+		grainCanvas.height = canvas.height;
+		const grainCtx = grainCanvas.getContext('2d');
+
+		const imageData = grainCtx.createImageData(grainCanvas.width, grainCanvas.height);
+		for (let i = 0; i < imageData.data.length; i += 4) {
+			const value = Math.random() * 255;
+			imageData.data[i] = value;
+			imageData.data[i + 1] = value;
+			imageData.data[i + 2] = value;
+			// imageData.data[i + 3] = 20;
+			imageData.data[i + 3] = grainStrength;
+		}
+		grainCtx.putImageData(imageData, 0, 0);
+		ctx.drawImage(grainCanvas, 0, 0);
 	}
 }
 
@@ -299,7 +321,9 @@ document.getElementById('imageUpload').addEventListener('change', function (e) {
 
 let imagePicker, container, imageTitle, imageSource, imageAuthor;
 let canvasLoadingOverlay;
+let grainCheckbox, grainStrengthContainer, grainStrengthSlider, grainStrengthValue;
 const DASHED_COLOR = '#3a3a3a'
+
 
 document.addEventListener('DOMContentLoaded', async () => {
 	imagePicker = document.getElementById('image-selector');
@@ -365,7 +389,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 		});
 	}
 
-	['username', 'title', 'subtitle', 'footer', 'themeSelect', 'useShadow', 'useBlur'].forEach(id => {
+	['username', 'title', 'subtitle', 'footer', 'themeSelect', 'useShadow', 'useBlur', 'useGrain', 'grainStrength'].forEach(id => {
 		const input = document.getElementById(id);
 		if (input) {
 			input.addEventListener('input', render);
@@ -380,7 +404,41 @@ document.addEventListener('DOMContentLoaded', async () => {
 			btn.style.border = '3px dashed #4285F4';
 		});
     });
+
+	grainCheckbox = document.getElementById("useGrain");
+	grainStrengthContainer = document.getElementById("grainStrengthContainer");
+	grainStrengthSlider = document.getElementById("grainStrength");
+	grainStrengthValue = document.getElementById("grainStrengthValue");
+
+	if (grainCheckbox && grainStrengthContainer) {
+		grainCheckbox.addEventListener("change", () => {
+			grainStrengthContainer.style.display = grainCheckbox.checked ? "block" : "none";
+		});
+		grainStrengthContainer.style.display = grainCheckbox.checked ? "block" : "none";
+	}
+
+	if (grainStrengthSlider) {
+		grainStrengthSlider.addEventListener('input', updateGrainSliderUI);
+		updateGrainSliderUI();
+	}
 });
+
+function updateGrainSliderUI() {
+	const grainStrengthSlider = document.getElementById("grainStrength");
+	const grainStrengthValue = document.getElementById("grainStrengthValue");
+
+	if (!grainStrengthSlider) return;
+
+	const min = Number(grainStrengthSlider.min) || 0;
+	const max = Number(grainStrengthSlider.max) || 100;
+	const value = Number(grainStrengthSlider.value);
+	const percent = ((value - min) / (max - min)) * 100;
+
+	grainStrengthSlider.style.setProperty("--value", percent);
+	if (grainStrengthValue) {
+		grainStrengthValue.textContent = value;
+	}
+}
 
 let colorNameMap = {};
 let defaultImagePaths = [];
