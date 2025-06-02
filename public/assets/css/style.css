@@ -6,11 +6,19 @@ body {
 	font-family: "Pretendard", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 	background: #111;
 	color: #fff;
-	display: flex;
+	/* display: flex; */
 	flex-direction: column;
 	justify-content: center;
 	align-items: center;
 	min-height: 100vh;
+}
+container {
+	display: flex;
+	flex-direction: row;
+
+	padding: 1rem;
+	max-width: 90rem;
+	margin: 0 auto;
 }
 .preview {
 	background: black;
@@ -22,12 +30,12 @@ body {
 	aspect-ratio: 1 / 1;
 }
 #left-panel {
-	width: 24rem;
-	/* height: 70rem; */
-	padding: 1rem;
 	display: flex;
 	flex-direction: column;
 	align-items: center;
+
+	flex: 0 0 24rem;
+	padding: 1rem;
 	border-radius: 1.5rem;
 	box-shadow: 0 10px 25px rgba(0,0,0,0.5);
 	background-color: #262626;
@@ -51,8 +59,9 @@ body {
 	margin-top: 0.75rem;
 }
 #right-panel {
-	width: 60rem;
-	padding: 16px;
+	flex: 1;
+	min-width: 0;
+	padding-left: 16px;
 	overflow-y: auto;
 	margin-left: 0.2rem;
 	padding-top: 0;
@@ -248,6 +257,12 @@ button.theme-button:hover {
 .custom-checkbox:checked + .checkbox-label .checkbox-label-unchecked {
 	display: none;
 }
+.img-wrapper,
+.color-wrapper {
+	width: 100%;
+	max-width: 112px;
+	aspect-ratio: 1 / 1;
+}
 #image-selector .img-wrapper:hover {
 	transform: scale(1.1);
 	transition: transform 0.2s ease, border 0.2s ease;
@@ -271,10 +286,20 @@ button.theme-button:hover {
 	text-decoration: none;
 	color: inherit;
 	transition: color 0.3s ease;
-  }
-  
-  #copyright a:hover,
-  #copyright a:focus {
+}
+
+#copyright a:hover,
+#copyright a:focus {
 	color: #FBBC05;
 	text-decoration: none;
-  }
+}
+
+@media (max-width: 900px) {
+	container {
+		flex-direction: column !important;
+	}
+	#right-panel {
+		padding: 0;
+		padding-top: 1rem;
+	}
+}
