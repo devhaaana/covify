@@ -7,7 +7,9 @@ async function searchUnsplashImages(query) {
 	
 		const unsplashSelector = document.getElementById("unsplash-selector");
 		unsplashSelector.innerHTML = "";
-        unsplashSelector.classList.add('grid', 'grid-cols-7', 'gap-4');
+		unsplashSelector.classList.add('grid', 'gap-4');
+		unsplashSelector.style.gridTemplateColumns = 'repeat(auto-fit, minmax(112px, 1fr))';
+        // unsplashSelector.classList.add('grid', 'grid-cols-7', 'gap-4');
 	
 		data.results.forEach(({ urls, description, alt_description, user }) => {
 			const imgWrapper = document.createElement('div');
