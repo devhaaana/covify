@@ -303,3 +303,9 @@ button.theme-button:hover {
 		padding-top: 1rem;
 	}
 }
+
+
+#canvas-wrapper.ios-blur {
+  filter: blur(6px);
+  transform: scale(1.05); /* blur로 인해 경계가 잘리는 걸 방지 */
+}

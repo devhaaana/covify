@@ -146,7 +146,6 @@ function renderBackground(ctx, canvas) {
 			imageData.data[i] = value;
 			imageData.data[i + 1] = value;
 			imageData.data[i + 2] = value;
-			// imageData.data[i + 3] = 20;
 			imageData.data[i + 3] = grainStrength;
 		}
 		grainCtx.putImageData(imageData, 0, 0);
