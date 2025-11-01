@@ -187,6 +187,7 @@ button.theme-button:hover {
 	padding         : 1rem;
 	border-radius   : 1.5rem;
 	padding         : 1rem;
+
 }
 #unsplash-searchBar {
 	background-color: #262626;
@@ -302,6 +303,13 @@ button.theme-button:hover {
 	#right-panel {
 		padding    : 0;
 		padding-top: 1rem;
+	}
+	#hexInput {
+		width: 300px;
+	}
+	#svCanvas {
+		width: 250px;
+		height: 200px;
 	}
 }
 
